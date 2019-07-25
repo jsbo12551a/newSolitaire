@@ -1,4 +1,6 @@
 (() => {
+  let nudo = [];
+  let fromElement = 0;
   //計時
   function showTime(m, s) {
     let tag = document.querySelector('#time');
@@ -66,13 +68,6 @@
       showTimeInterval();
     });
   }
-  //製造卡牌樣式
-  function styleCode(codes) {
-    deck = shuffle(buildDeck());
-    deck.forEach((code, i) => {
-      // console.log(card.cardNumber())
-    });
-  }
 
   //卡牌
   class Card {
@@ -99,12 +94,12 @@
     //點數
     cardPoint() {
       switch (this.number) {
-        case 1:
-          return 11;
-        case 11:
-        case 12:
-        case 13:
-          return 10;
+        // case 1:
+        //   return 11;
+        // case 11:
+        // case 12:
+        // case 13:
+        //   return 10;
         default:
           return this.number;
       }
@@ -195,7 +190,7 @@
         let code = document.createElement('div');
         let suitTop = document.createElement('p');
         let suitBottom = document.createElement('p');
-        code.setAttribute('id', `code${i}${j}`);
+        code.setAttribute('id', `code${i}_${deck[i][j].cardPoint()}`);
         code.setAttribute('class', 'box');
         code.setAttribute('draggable', 'true');
         code.style.position = 'absolute';
@@ -210,11 +205,11 @@
         suitBottom.style.right = '20px';
         suitBottom.innerText =
           deck[i][j].cardNumber() + '  ' + deck[i][j].cardSuit();
-          
-        if (deck[i][j].suit === 3 || deck[i][j].suit === 4){
+
+        if (deck[i][j].suit === 3 || deck[i][j].suit === 4) {
           suitBottom.style.color = '#A617FF';
           suitTop.style.color = '#A617FF';
-        }else{
+        } else {
           suitBottom.style.color = '#00FFCE';
           suitTop.style.color = '#00FFCE';
         }
@@ -234,25 +229,27 @@
     for (let i = 0; i < solitaire.length; i++) {
       if (box !== null) {
         // solitaire[i].removeChild(box);
-        solitaire[i].innerHTML = ''
+        solitaire[i].innerHTML = '';
       }
     }
 
     // console.log(deck);
   }
 
-
   showCode();
   showTime(0, 0);
-  let data = [];
 
   //儲存動作
-  function storeAction(action){
-    
-    data.push(action);
-    console.log(data[0]);
-  }
-  
+
+  // class storeAction {
+  //   constructor(code, position) {
+  //     this.code = code;
+  //     this.position = position;
+  //   }
+  //   //返回上一個動作
+  //   last_Action() {}
+  // }
+
   //拖曳卡
   let box = document.querySelectorAll('.box');
   let draggedCode = 0;
@@ -268,28 +265,50 @@
     item.addEventListener('dragover', cancelDefault);
   });
 
-  function cancelDefault(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
-  }
-
   function dragStart(e) {
     e.dataTransfer.setData('text/plain', e.target.id);
+    // console.log(e.target.previousSibling.id)
+    fromElement = e.target.previousSibling.id;
+  }
+  function cancelDefault(e) {
+    // console.log(e.path[0].id.split("_")[1])
+    // console.log(e)
+    e.preventDefault();
+    // e.stopPropagation();
+    return false;
   }
 
   function dropped(e) {
     cancelDefault(e);
-    console.log(e.target)
+    // console.log(e.target);
     let id = e.dataTransfer.getData('text/plain');
+    // console.log(id.split("_")[1])
     //   if (id.dataset.item === e.target.dataset.num) {
-    let code = document.getElementById(id);
-    code.style.top = 0;
-    e.target.appendChild(code);
-    storeAction(e.target)
-    //   }
+
+    //判斷是否有卡牌
+    if (e.target.id === '') {
+      let code = document.getElementById(id);
+      code.style.top = 0;
+      e.target.appendChild(code);
+      nudo.push([fromElement, id]);
+      //若有卡牌作比較
+    } else if ((e.target.id.split('_')[1] - 1) * 1 === id.split('_')[1] * 1) {
+      // console.log(e.target.id.split('_')[1]-1)
+      // console.log(id.split('_')[1])
+      let code = document.getElementById(id);
+      code.style.top = '30px';
+      e.target.appendChild(code);
+      nudo.push([fromElement, id]);
+    }
   }
-
-
-  
+  //回上一個動作
+  let onnudo = document.querySelector('#undo');
+  onnudo.addEventListener('click', function() {
+    let a = nudo.pop();
+    let onCode = document.getElementById(a[0]);
+    // console.log(onCode.offsetTop)
+    let code = document.getElementById(a[1]);
+    code.style.top = '30px'
+    onCode.appendChild(code);
+  });
 })();
